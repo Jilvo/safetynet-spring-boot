@@ -1,13 +1,27 @@
 package com.safetynet.alerts.controllers;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import com.safetynet.alerts.services.JsonFileService;
+
+import java.io.IOException;
+
 @RestController
 @RequestMapping("/person")
 public class PersonController {
+    private final JsonFileService jsonFileService;
+
+    @Autowired
+    public PersonController(JsonFileService jsonFileService) {
+        this.jsonFileService = jsonFileService;
+    }
+
+    @GetMapping
+    public String gettest() throws IOException {
+        String jsonData  = jsonFileService.readJsonFile();
+        System.out.println(jsonData);
+        return jsonData;
+    }
     @PostMapping
     public String createPerson(@RequestParam(name = "stationNumber") String stationNumber) {
         return "Hello";

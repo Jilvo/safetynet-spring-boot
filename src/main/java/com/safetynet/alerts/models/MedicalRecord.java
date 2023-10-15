@@ -2,7 +2,7 @@ package com.safetynet.alerts.models;
 
 import java.util.List;
 
-public class medicalRecord {
+public class MedicalRecord {
     private String firstName;
     private String lastName;
     private String birthdate;
