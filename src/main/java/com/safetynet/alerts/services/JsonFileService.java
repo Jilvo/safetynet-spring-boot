@@ -9,4 +9,5 @@ public class JsonFileService {
         String content = new String(Files.readAllBytes(Paths.get("src/main/java/data.json")));
         return content;
     }
+
 }
