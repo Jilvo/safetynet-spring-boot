@@ -1,6 +1,8 @@
 package com.safetynet.alerts.controllers;
-import com.fasterxml.jackson.annotation.JsonValue;
-import com.jsoniter.any.Any;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+
 import com.safetynet.alerts.models.Person;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,8 +17,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.jsoniter.JsonIterator;
-import com.jsoniter.output.JsonStream;
 @RestController
 @RequestMapping("/person")
 public class PersonController {
@@ -28,39 +28,96 @@ public class PersonController {
     }
     @PostMapping
     public ResponseEntity <String>createPerson(@RequestBody Person newPerson) throws IOException {
-        System.out.println(newPerson);
         if (newPerson!= null) {
             String jsonString = jsonFileService.readJsonFile();
-            Any jsonObject = JsonIterator.deserialize(jsonString);
-            Any personsAny = jsonObject.get("persons");
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode root = objectMapper.readTree(jsonString);
+            ArrayNode personsNode = (ArrayNode) root.get("persons");
             Map<String, Person> personMap = new HashMap<>();
-            for (Any personItem : personsAny) {
-                Person person = Person.fromDict(personItem.toString());
-                personMap.put(person.firstName + person.lastName, person);
+            for (JsonNode personItem : personsNode) {
+                if (newPerson.firstName.equals(personItem.get("firstName").asText())
+                        && newPerson.lastName.equals(personItem.get("lastName").asText())) {
+                    return ResponseEntity.status(HttpStatus.CONFLICT).body("Person already exists");
+                }
             }
-            if (personMap.get(newPerson.firstName + newPerson.lastName) == null){
-                personMap.put(newPerson.firstName + newPerson.lastName, newPerson);
-            }
-            List<String> updatedPersonsList = new ArrayList<>();
-            for (Person person : personMap.values()) {
-                updatedPersonsList.add(Person.toDict(person));
-            }
-            jsonObject.set("persons", updatedPersonsList);
-//            else{
-//                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Person already exists");
-//            }
-            return ResponseEntity.status(HttpStatus.CREATED).body("ok");
+            JsonNode newPersonNode = objectMapper.valueToTree(newPerson);
+
+            personsNode.add(newPersonNode);
+
+            String updatedJsonString = objectMapper.writeValueAsString(root);
+            jsonFileService.writeJsonFile(updatedJsonString);
+            return ResponseEntity.status(HttpStatus.CREATED).body("Created");
         }
         else{
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Input empty");
-    }
+        }
     }
     @PutMapping
-    public String updatePerson(@RequestBody Person person) {
-        return "Hello";
+    public ResponseEntity <String> updatePerson(@RequestBody Person toUpdatePerson) throws IOException {
+        if (toUpdatePerson!= null) {
+            String jsonString = jsonFileService.readJsonFile();
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode root = objectMapper.readTree(jsonString);
+            ArrayNode personsNode = (ArrayNode) root.get("persons");
+            List<JsonNode> updatedPersonsList = new ArrayList<>();
+            Boolean isExists = false;
+            for (JsonNode personItem : personsNode) {
+                if (toUpdatePerson.firstName.equals(personItem.get("firstName").asText()) &&
+                        toUpdatePerson.lastName.equals(personItem.get("lastName").asText())) {
+                    JsonNode UpdatePersonNode = objectMapper.valueToTree(toUpdatePerson);
+                    updatedPersonsList.add(UpdatePersonNode);
+                    isExists = true;
+                }
+                if (!(toUpdatePerson.firstName.equals(personItem.get("firstName").asText()) &&
+                        toUpdatePerson.lastName.equals(personItem.get("lastName").asText()))) {
+                    updatedPersonsList.add(personItem);
+                }
+            }
+            if (!isExists) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Person does not exists");
+            }
+            ((ArrayNode) personsNode).removeAll();
+            ((ArrayNode) personsNode).addAll(updatedPersonsList);
+            String updatedJsonString = objectMapper.writeValueAsString(root);
+            jsonFileService.writeJsonFile(updatedJsonString);
+
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body("Updated");
+        }
+        else{
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Input empty");
+        }
     }
     @DeleteMapping
-    public String deletePerson(@RequestBody Person person) {
-        return "Hello";
+    public ResponseEntity <String> deletePerson(@RequestBody Person toDeletePerson) throws IOException {
+        if (toDeletePerson!= null) {
+            String jsonString = jsonFileService.readJsonFile();
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode root = objectMapper.readTree(jsonString);
+            ArrayNode personsNode = (ArrayNode) root.get("persons");
+            List<JsonNode> updatedPersonsList = new ArrayList<>();
+            Boolean isExists = false;
+            for (JsonNode personItem : personsNode) {
+                if (toDeletePerson.firstName.equals(personItem.get("firstName").asText()) &&
+                        toDeletePerson.lastName.equals(personItem.get("lastName").asText())) {
+                    isExists = true;
+                }
+                if (!(toDeletePerson.firstName.equals(personItem.get("firstName").asText()) &&
+                        toDeletePerson.lastName.equals(personItem.get("lastName").asText()))) {
+                    updatedPersonsList.add(personItem);
+                }
+            }
+            if (!isExists) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Person does not exists");
+            }
+            ((ArrayNode) personsNode).removeAll();
+            ((ArrayNode) personsNode).addAll(updatedPersonsList);
+            String updatedJsonString = objectMapper.writeValueAsString(root);
+            jsonFileService.writeJsonFile(updatedJsonString);
+
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body("Deleted");
+        }
+        else{
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Input empty");
+        }
     }
 }
