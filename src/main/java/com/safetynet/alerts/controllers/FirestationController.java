@@ -1,10 +1,13 @@
 package com.safetynet.alerts.controllers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.jsoniter.JsonIterator;
+import com.jsoniter.ValueType;
+import com.jsoniter.any.Any;
 import com.safetynet.alerts.models.Firestation;
+import com.safetynet.alerts.models.MedicalRecord;
 import com.safetynet.alerts.models.Person;
 import com.safetynet.alerts.services.JsonFileService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,27 +23,74 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 
 @RestController
 @RequestMapping("/firestation")
 public class FirestationController {
-
-    @GetMapping
-    public String getFirestation(@RequestParam(name = "stationNumber") String stationNumber) {
-        return "Hello";
-    }
-
-    private final JsonFileService jsonFileService;
-
     @Autowired
     public FirestationController(JsonFileService jsonFileService) {
         this.jsonFileService = jsonFileService;
     }
+    private final JsonFileService jsonFileService;
+    @GetMapping
+    public Map<String,Object> getFirestation(@RequestParam(name = "stationNumber") String stationNumber) throws IOException, ParseException {
+        String jsonString  = jsonFileService.readJsonFile();
+        Any jsonObject = JsonIterator.deserialize(jsonString);
+        Any personsAny = jsonObject.get("persons");
+        Any firestationsAny = jsonObject.get("firestations");
+        Any medicalRecordsAny = jsonObject.get("medicalrecords");
+        List<String> addressForStationNumberList = new ArrayList<>();
+        Map<String,Object> personsForStationNumber = new HashMap<>();
+        List<Person> personCoverByStationNumber = new ArrayList<>();
+        if (firestationsAny != null && firestationsAny.valueType() == ValueType.ARRAY) {
+            for (Any firestationItem : firestationsAny) {
+                Firestation firestation = Firestation.fromDict(firestationItem.toString());
+                if (firestation.station.equals(stationNumber)) {
+                    addressForStationNumberList.add(firestation.address);
+                }
+                //            if (firestationItem.get("stationNumber").asText().equals(stationNumber)) {}
+            }
+        }
+        Map<String, MedicalRecord> medicalRecordsMap = new HashMap<>();
+        for (Any personItem : medicalRecordsAny) {
+            MedicalRecord medicalRecord = MedicalRecord.fromDict(personItem.toString());
+            medicalRecordsMap.put(medicalRecord.firstName + medicalRecord.lastName, medicalRecord);
+        }
+        if (personsAny != null && personsAny.valueType() == ValueType.ARRAY) {
+            Integer minorCount = 0;
+            Integer adultCount = 0;
+            for (String stationNumberAdress : addressForStationNumberList) {
+                for (Any personItem : personsAny) {
+                    Person person = Person.fromDict(personItem.toString());
+                    MedicalRecord medicalRecord = medicalRecordsMap.get(person.firstName + person.lastName);
+                    if (person.address!= null && person.address.equals(stationNumberAdress)) {
+                        Date birthdate = new SimpleDateFormat("dd/MM/yyyy").parse(medicalRecord.birthdate);
+                        Date currentDate = new Date();
+                        long ageInMillis = currentDate.getTime() - birthdate.getTime();
+                        long ageInYears = ageInMillis / (1000L * 60 * 60 * 24 * 365);
+                        if (ageInYears <= 18) {
+                            minorCount++;
+                        }
+                        else {
+                            adultCount++;
+
+                        }
+                        personCoverByStationNumber.add(person);
+
+                    }
+                }
+                personsForStationNumber.put("List of persons",personCoverByStationNumber);
+                personsForStationNumber.put("Number of Childs",minorCount);
+                personsForStationNumber.put("Number of Adults",adultCount);
+            }
+        }
+        return (Map<String, Object>) personsForStationNumber;
+    }
+
     @PostMapping
     public ResponseEntity<String> createFirestation(@RequestBody Firestation newFirestation) throws IOException {
         if (newFirestation!= null) {
