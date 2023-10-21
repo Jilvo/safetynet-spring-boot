@@ -3,6 +3,7 @@ package com.safetynet.alerts.controllers;
 import com.jsoniter.JsonIterator;
 import com.jsoniter.ValueType;
 import com.jsoniter.any.Any;
+import com.safetynet.alerts.models.Firestation;
 import com.safetynet.alerts.models.MedicalRecord;
 import com.safetynet.alerts.models.Person;
 import com.safetynet.alerts.services.JsonFileService;
@@ -28,58 +29,67 @@ public class FloodController {
     }
 
     @GetMapping
-    public List<List> getFlood(@RequestParam(name = "stations") List<String> stations) throws IOException, ParseException {
+    public List<HashMap> getFlood(@RequestParam(name = "stations") List<String> stations) throws IOException, ParseException {
 
         String jsonString = jsonFileService.readJsonFile();
         Any jsonObject = JsonIterator.deserialize(jsonString);
         Any personsAny = jsonObject.get("persons");
         Any medicalRecordsAny = jsonObject.get("medicalrecords");
-        Any fireStationsAny = jsonObject.get("firestations");
-        List<Map<String, Object>> PersonDataList = new ArrayList<>();
-        List<List> ListOfPersonByStation = null;
+        Any firestationsAny = jsonObject.get("firestations");
+
+        List<HashMap> ListOfAdressInListofStation = new ArrayList<>();
         if (personsAny != null && personsAny.valueType() == ValueType.ARRAY &&
                 medicalRecordsAny != null && medicalRecordsAny.valueType() == ValueType.ARRAY &&
-                fireStationsAny != null && fireStationsAny.valueType() == ValueType.ARRAY
+                firestationsAny != null && firestationsAny.valueType() == ValueType.ARRAY
         ) {
-            Map<String, Person> personMap = new HashMap<>();
             Map<String, MedicalRecord> medicalRecordMap = new HashMap<>();
-//            for (Any personItem : personsAny) {
-//                Person person = Person.fromDict(personItem.toString());
-//                personMap.put(person.firstName + person.lastName, person);
-//            }
+
             for (Any personItem : medicalRecordsAny) {
                 MedicalRecord medicalRecord = MedicalRecord.fromDict(personItem.toString());
                 medicalRecordMap.put(medicalRecord.firstName + medicalRecord.lastName, medicalRecord);
             }
-//            #TODO il faut faire une liste des adresse sur le numéro de station puis boucler sur la liste en question
 
+//            LIST OF STATION
             for (String station : stations) {
-                for (Any personItem : personsAny) {
-                    Person person = Person.fromDict(personItem.toString());
-                    List<Person> personDataLivingAtAdress = new ArrayList<>();
-                    if (person.address != null && person.address.equals(station)) {
-                        Map<String, String> personData = new HashMap<>();
-                        MedicalRecord medicalRecordDict = medicalRecordMap.get(person.firstName + person.lastName);
-                        MedicalRecord medicalRecord = MedicalRecord.fromDict(medicalRecordDict.toString());
-                        Date birthdate = new SimpleDateFormat("dd/MM/yyyy").parse(medicalRecord.birthdate);
-                        Date currentDate = new Date();
-                        long ageInMillis = currentDate.getTime() - birthdate.getTime();
-                        long ageInYears = ageInMillis / (1000L * 60 * 60 * 24 * 365);
-                        personData.put("firstName", person.firstName);
-                        personData.put("lastName", person.lastName);
-                        personData.put("age", String.valueOf(ageInYears));
-                        personData.put("medications", medicalRecord.medications.toString());
-                        personData.put("allergies", medicalRecord.allergies.toString());
-                        personDataLivingAtAdress.add((Person) personData);
+                HashMap<String,Object> ListOfAdressInStation = new HashMap<>();
+                List<String> addressForStationNumberList = new ArrayList<>();
+                for (Any firestationItem : firestationsAny) {
+                    Firestation firestation = Firestation.fromDict(firestationItem.toString());
+                    if (firestation.station.equals(station)) {
+                        addressForStationNumberList.add(firestation.address);
                     }
-
-                    ListOfPersonByStation.add(personDataLivingAtAdress);
                 }
-
+//                ONE ADDRESS
+                HashMap<String,Object> PersonByAdress = new HashMap<>();
+                for (String addressForStationNumber : addressForStationNumberList)
+                {
+                    List<Object> ListPersonByAdress = new ArrayList<>();
+//                    ONE PERSON
+                    for (Any personItem : personsAny) {
+                        Person person = Person.fromDict(personItem.toString());
+                        MedicalRecord medicalRecord = medicalRecordMap.get(person.firstName + person.lastName);
+                        if (person.address != null && person.address.equals(addressForStationNumber)) {
+                            HashMap<String, String> personData = new HashMap<>();
+                            Date birthdate = new SimpleDateFormat("dd/MM/yyyy").parse(medicalRecord.birthdate);
+                            Date currentDate = new Date();
+                            long ageInMillis = currentDate.getTime() - birthdate.getTime();
+                            long ageInYears = ageInMillis / (1000L * 60 * 60 * 24 * 365);
+                            personData.put("firstName", String.valueOf(person.firstName));
+                            personData.put("lastName", String.valueOf(person.lastName));
+                            personData.put("phonenumber", String.valueOf(person.phone));
+                            personData.put("age", String.valueOf(ageInYears));
+                            personData.put("medications", String.valueOf(medicalRecord.medications));
+                            personData.put("allergies", String.valueOf(medicalRecord.allergies));
+                            ListPersonByAdress.add(personData);
+                        }
+                        PersonByAdress.put("Adress "+addressForStationNumber,ListPersonByAdress);
+                    }
+                    ListOfAdressInStation.put("Station n°"+station,PersonByAdress);
+                }
+                ListOfAdressInListofStation.add(ListOfAdressInStation);
             }
-
         }
-        return ListOfPersonByStation;
+        return ListOfAdressInListofStation;
     }
 
 

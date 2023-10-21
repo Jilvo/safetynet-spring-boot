@@ -10,6 +10,32 @@ public class Person {
     public String zip;
     public String phone;
     public String email;
+
+    public String getFirstName() {
+        return firstName;
+    }
+    public String getLastName() {
+        return lastName;
+    }
+    public String getAddress() {
+        return address;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public String getZip() {
+        return zip;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public String getEmail() {
+        return email;
+    }
     public static Person fromDict(String jsonString){
         return JsonIterator.deserialize(jsonString, Person.class);
     }
