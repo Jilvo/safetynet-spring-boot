@@ -35,8 +35,8 @@ public class PhoneAlertController {
         if (firestationsAny != null && firestationsAny.valueType() == ValueType.ARRAY) {
             for (Any firestationItem : firestationsAny) {
                 Firestation firestation = Firestation.fromDict(firestationItem.toString());
-                if (firestation.station.equals(firestation_number)) {
-                    addressForStationNumberList.add(firestation.address);
+                if (firestation.getStation().equals(firestation_number)) {
+                    addressForStationNumberList.add(firestation.getAddress());
                 }
                 //            if (firestationItem.get("stationNumber").asText().equals(stationNumber)) {}
             }
@@ -45,8 +45,8 @@ public class PhoneAlertController {
             for (String stationNumberAdress : addressForStationNumberList) {
                 for (Any personItem : personsAny) {
                     Person person = Person.fromDict(personItem.toString());
-                    if (person.address!= null && person.address.equals(stationNumberAdress) && !(phoneNumberList.contains(person.phone))) {
-                        phoneNumberList.add(person.phone);
+                    if (person.getAddress()!= null && person.getAddress().equals(stationNumberAdress) && !(phoneNumberList.contains(person.getPhone()))) {
+                        phoneNumberList.add(person.getPhone());
                     }
                 }
 

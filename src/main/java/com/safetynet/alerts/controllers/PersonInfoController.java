@@ -35,7 +35,7 @@ public class PersonInfoController {
         if (personsAny != null && personsAny.valueType() == ValueType.ARRAY) {
             for (Any personItem : personsAny) {
                 Person person = Person.fromDict(personItem.toString());
-                if (person.firstName != null && person.lastName != null && person.firstName.equals(firstname) && person.lastName.equals(lastname)){
+                if (person.getFirstName() != null && person.getLastName() != null && person.getFirstName().equals(firstname) && person.getLastName().equals(lastname)){
                     personList.add(person);
                 }
             }

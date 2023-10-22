@@ -41,33 +41,33 @@ public class ChildAlertController {
 
             for (Any personItem : personsAny) {
                 Person person = Person.fromDict(personItem.toString());
-                personMap.put(person.firstName + person.lastName, person);
+                personMap.put(person.getFirstName() + person.getLastName(), person);
             }
             for (Any medicalRecordItem : medicalRecordsAny) {
                 MedicalRecord medicalRecord = MedicalRecord.fromDict(medicalRecordItem.toString());
 
-                Person person = personMap.get(medicalRecord.firstName + medicalRecord.lastName);
+                Person person = personMap.get(medicalRecord.getFirstName() + medicalRecord.getLastName());
 
-                if (person != null && person.address != null && person.address.equals(address)) {
-                    Date birthdate = new SimpleDateFormat("dd/MM/yyyy").parse(medicalRecord.birthdate);
+                if (person != null && person.getAddress() != null && person.getAddress().equals(address)) {
+                    Date birthdate = new SimpleDateFormat("dd/MM/yyyy").parse(medicalRecord.getBirthdate());
                     Date currentDate = new Date();
                     long ageInMillis = currentDate.getTime() - birthdate.getTime();
                     long ageInYears = ageInMillis / (1000L * 60 * 60 * 24 * 365);
 
                     if (ageInYears <= 18) {
                         Map<String, Object> child = new HashMap<>();
-                        child.put("firstName", person.firstName);
-                        child.put("lastName", person.lastName);
-                        child.put("birthdate", medicalRecord.birthdate);
+                        child.put("firstName", person.getFirstName());
+                        child.put("lastName", person.getLastName());
+                        child.put("birthdate", medicalRecord.getBirthdate());
 
                         List<Map<String, String>> otherMembers = new ArrayList<>();
                         for (Any otherPersonItem : personsAny) {
                             Person otherPerson = Person.fromDict(otherPersonItem.toString());
-                            if (otherPerson.address.equals(person.address)) {
+                            if (otherPerson.getAddress().equals(person.getAddress())) {
                                 Map<String, String> otherMemberData = new HashMap<>();
-                                otherMemberData.put("firstName", otherPerson.firstName);
-                                otherMemberData.put("lastName", otherPerson.lastName);
-                                otherMemberData.put("birthdate", medicalRecord.birthdate);
+                                otherMemberData.put("firstName", otherPerson.getFirstName());
+                                otherMemberData.put("lastName", otherPerson.getLastName());
+                                otherMemberData.put("birthdate", medicalRecord.getBirthdate());
                                 otherMembers.add(otherMemberData);
                             }
                         }

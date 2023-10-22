@@ -5,6 +5,7 @@ import com.jsoniter.output.JsonStream;
 public class Firestation {
     public String address;
     public String station;
+
     public String getAddress() {
         return address;
     }

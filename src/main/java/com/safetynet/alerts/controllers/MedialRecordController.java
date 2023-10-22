@@ -34,8 +34,8 @@ public class MedialRecordController {
             ArrayNode medicalrecordsNode = (ArrayNode) root.get("medicalrecords");
             Map<String, MedicalRecord> personMap = new HashMap<>();
             for (JsonNode personItem : medicalrecordsNode) {
-                if (toCreateMedicalRecord.firstName.equals(personItem.get("firstName").asText())
-                        && toCreateMedicalRecord.lastName.equals(personItem.get("lastName").asText())) {
+                if (toCreateMedicalRecord.getFirstName().equals(personItem.get("firstName").asText())
+                        && toCreateMedicalRecord.getLastName().equals(personItem.get("lastName").asText())) {
                     return ResponseEntity.status(HttpStatus.CONFLICT).body("MedicalRecord already exists");
                 }
             }
@@ -61,14 +61,14 @@ public class MedialRecordController {
             List<JsonNode> updatedMedicalRecords = new ArrayList<>();
             Boolean isExist = false;
             for (JsonNode medicalRecordItem : medicalrecordsNode) {
-                if (toUpdateMedicalRecord.firstName.equals(medicalRecordItem.get("firstName").asText()) &&
-                        toUpdateMedicalRecord.lastName.equals(medicalRecordItem.get("lastName").asText())) {
+                if (toUpdateMedicalRecord.getFirstName().equals(medicalRecordItem.get("firstName").asText()) &&
+                        toUpdateMedicalRecord.getLastName().equals(medicalRecordItem.get("lastName").asText())) {
                     JsonNode UpdatePersonNode = objectMapper.valueToTree(toUpdateMedicalRecord);
                     updatedMedicalRecords.add(UpdatePersonNode);
                     isExist = true;
                 }
-                if (!(toUpdateMedicalRecord.firstName.equals(medicalRecordItem.get("firstName").asText()) &&
-                        toUpdateMedicalRecord.lastName.equals(medicalRecordItem.get("lastName").asText()))) {
+                if (!(toUpdateMedicalRecord.getFirstName().equals(medicalRecordItem.get("firstName").asText()) &&
+                        toUpdateMedicalRecord.getLastName().equals(medicalRecordItem.get("lastName").asText()))) {
                     updatedMedicalRecords.add(medicalRecordItem);
                 }
             }
@@ -94,12 +94,12 @@ public class MedialRecordController {
             List<JsonNode> updatedMedicalRecordsList = new ArrayList<>();
             Boolean isExist = false;
             for (JsonNode personItem : medicalrecordsNode) {
-                if (toDeleteMedicalRecord.firstName.equals(personItem.get("firstName").asText()) &&
-                        toDeleteMedicalRecord.lastName.equals(personItem.get("lastName").asText())) {
+                if (toDeleteMedicalRecord.getFirstName().equals(personItem.get("firstName").asText()) &&
+                        toDeleteMedicalRecord.getLastName().equals(personItem.get("lastName").asText())) {
                     isExist = true;
                 }
-                if (!(toDeleteMedicalRecord.firstName.equals(personItem.get("firstName").asText()) &&
-                        toDeleteMedicalRecord.lastName.equals(personItem.get("lastName").asText()))) {
+                if (!(toDeleteMedicalRecord.getFirstName().equals(personItem.get("firstName").asText()) &&
+                        toDeleteMedicalRecord.getLastName().equals(personItem.get("lastName").asText()))) {
                     updatedMedicalRecordsList.add(personItem);
                 }
             }

@@ -49,8 +49,8 @@ public class FirestationController {
         if (firestationsAny != null && firestationsAny.valueType() == ValueType.ARRAY) {
             for (Any firestationItem : firestationsAny) {
                 Firestation firestation = Firestation.fromDict(firestationItem.toString());
-                if (firestation.station.equals(stationNumber)) {
-                    addressForStationNumberList.add(firestation.address);
+                if (firestation.getStation().equals(stationNumber)) {
+                    addressForStationNumberList.add(firestation.getAddress());
                 }
                 //            if (firestationItem.get("stationNumber").asText().equals(stationNumber)) {}
             }
@@ -58,7 +58,7 @@ public class FirestationController {
         Map<String, MedicalRecord> medicalRecordsMap = new HashMap<>();
         for (Any personItem : medicalRecordsAny) {
             MedicalRecord medicalRecord = MedicalRecord.fromDict(personItem.toString());
-            medicalRecordsMap.put(medicalRecord.firstName + medicalRecord.lastName, medicalRecord);
+            medicalRecordsMap.put(medicalRecord.getFirstName() + medicalRecord.getLastName(), medicalRecord);
         }
         if (personsAny != null && personsAny.valueType() == ValueType.ARRAY) {
             Integer minorCount = 0;
@@ -66,9 +66,9 @@ public class FirestationController {
             for (String stationNumberAdress : addressForStationNumberList) {
                 for (Any personItem : personsAny) {
                     Person person = Person.fromDict(personItem.toString());
-                    MedicalRecord medicalRecord = medicalRecordsMap.get(person.firstName + person.lastName);
-                    if (person.address!= null && person.address.equals(stationNumberAdress)) {
-                        Date birthdate = new SimpleDateFormat("dd/MM/yyyy").parse(medicalRecord.birthdate);
+                    MedicalRecord medicalRecord = medicalRecordsMap.get(person.getFirstName() + person.getLastName());
+                    if (person.getAddress()!= null && person.getAddress().equals(stationNumberAdress)) {
+                        Date birthdate = new SimpleDateFormat("dd/MM/yyyy").parse(medicalRecord.getBirthdate());
                         Date currentDate = new Date();
                         long ageInMillis = currentDate.getTime() - birthdate.getTime();
                         long ageInYears = ageInMillis / (1000L * 60 * 60 * 24 * 365);
@@ -100,7 +100,7 @@ public class FirestationController {
             ArrayNode firestationsNode = (ArrayNode) root.get("firestations");
             Map<String, Firestation> firestationMap = new HashMap<>();
             for (JsonNode firestationItem : firestationsNode) {
-                if (newFirestation.address.equals(firestationItem.get("address").asText())) {
+                if (newFirestation.getAddress().equals(firestationItem.get("address").asText())) {
                     return ResponseEntity.status(HttpStatus.CONFLICT).body("Firestation already exists");
                 }
             }
@@ -127,12 +127,12 @@ public class FirestationController {
             List<JsonNode> updatedFirestationsList = new ArrayList<>();
             Boolean isExist = false;
             for (JsonNode firestationItem : firestationsNode) {
-                if (toUpdateFirestation.address.equals(firestationItem.get("address").asText())) {
+                if (toUpdateFirestation.getAddress().equals(firestationItem.get("address").asText())) {
                     JsonNode UpdateFirestationsNode = objectMapper.valueToTree(toUpdateFirestation);
                     updatedFirestationsList.add(UpdateFirestationsNode);
                     isExist = true;
                 }
-                if (!(toUpdateFirestation.address.equals(firestationItem.get("address").asText()))) {
+                if (!(toUpdateFirestation.getAddress().equals(firestationItem.get("address").asText()))) {
                     updatedFirestationsList.add(firestationItem);
                 }
             }
@@ -161,10 +161,10 @@ public class FirestationController {
             List<JsonNode> updatedFirestationsList = new ArrayList<>();
             Boolean isExist = false;
             for (JsonNode firestationItem : firestationsNode) {
-                if (toDeleteFirestation.address.equals(firestationItem.get("address").asText()) ) {
+                if (toDeleteFirestation.getAddress().equals(firestationItem.get("address").asText()) ) {
                     isExist = true;
                 }
-                if (!(toDeleteFirestation.address.equals(firestationItem.get("address").asText()))) {
+                if (!(toDeleteFirestation.getAddress().equals(firestationItem.get("address").asText()))) {
                     updatedFirestationsList.add(firestationItem);
                 }
             }

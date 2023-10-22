@@ -46,7 +46,7 @@ public class FloodController {
 
             for (Any personItem : medicalRecordsAny) {
                 MedicalRecord medicalRecord = MedicalRecord.fromDict(personItem.toString());
-                medicalRecordMap.put(medicalRecord.firstName + medicalRecord.lastName, medicalRecord);
+                medicalRecordMap.put(medicalRecord.getFirstName() + medicalRecord.getLastName(), medicalRecord);
             }
 
 //            LIST OF STATION
@@ -55,8 +55,8 @@ public class FloodController {
                 List<String> addressForStationNumberList = new ArrayList<>();
                 for (Any firestationItem : firestationsAny) {
                     Firestation firestation = Firestation.fromDict(firestationItem.toString());
-                    if (firestation.station.equals(station)) {
-                        addressForStationNumberList.add(firestation.address);
+                    if (firestation.getStation().equals(station)) {
+                        addressForStationNumberList.add(firestation.getAddress());
                     }
                 }
 //                ONE ADDRESS
@@ -67,19 +67,19 @@ public class FloodController {
 //                    ONE PERSON
                     for (Any personItem : personsAny) {
                         Person person = Person.fromDict(personItem.toString());
-                        MedicalRecord medicalRecord = medicalRecordMap.get(person.firstName + person.lastName);
-                        if (person.address != null && person.address.equals(addressForStationNumber)) {
+                        MedicalRecord medicalRecord = medicalRecordMap.get(person.getFirstName() + person.getLastName());
+                        if (person.getAddress() != null && person.getAddress().equals(addressForStationNumber)) {
                             HashMap<String, String> personData = new HashMap<>();
-                            Date birthdate = new SimpleDateFormat("dd/MM/yyyy").parse(medicalRecord.birthdate);
+                            Date birthdate = new SimpleDateFormat("dd/MM/yyyy").parse(medicalRecord.getBirthdate());
                             Date currentDate = new Date();
                             long ageInMillis = currentDate.getTime() - birthdate.getTime();
                             long ageInYears = ageInMillis / (1000L * 60 * 60 * 24 * 365);
-                            personData.put("firstName", String.valueOf(person.firstName));
-                            personData.put("lastName", String.valueOf(person.lastName));
-                            personData.put("phonenumber", String.valueOf(person.phone));
+                            personData.put("firstName", String.valueOf(person.getFirstName()));
+                            personData.put("lastName", String.valueOf(person.getLastName()));
+                            personData.put("phonenumber", String.valueOf(person.getPhone()));
                             personData.put("age", String.valueOf(ageInYears));
-                            personData.put("medications", String.valueOf(medicalRecord.medications));
-                            personData.put("allergies", String.valueOf(medicalRecord.allergies));
+                            personData.put("medications", String.valueOf(medicalRecord.getMedications()));
+                            personData.put("allergies", String.valueOf(medicalRecord.getAllergies()));
                             ListPersonByAdress.add(personData);
                         }
                         PersonByAdress.put("Adress "+addressForStationNumber,ListPersonByAdress);

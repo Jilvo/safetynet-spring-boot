@@ -35,8 +35,8 @@ public class CommunityEmailController {
         if (personsAny != null && personsAny.valueType() == ValueType.ARRAY) {
             for (Any personItem : personsAny) {
                 Person person = Person.fromDict(personItem.toString());
-                if (person.city != null && person.email != null && person.city.equals(city)){
-                    personList.add(person.email);
+                if (person.getCity() != null && person.getEmail() != null && person.getCity().equals(city)){
+                    personList.add(person.getEmail());
                 }
             }
     }

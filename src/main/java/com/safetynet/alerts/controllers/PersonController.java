@@ -35,8 +35,8 @@ public class PersonController {
             ArrayNode personsNode = (ArrayNode) root.get("persons");
             Map<String, Person> personMap = new HashMap<>();
             for (JsonNode personItem : personsNode) {
-                if (newPerson.firstName.equals(personItem.get("firstName").asText())
-                        && newPerson.lastName.equals(personItem.get("lastName").asText())) {
+                if (newPerson.getFirstName().equals(personItem.get("firstName").asText())
+                        && newPerson.getLastName().equals(personItem.get("lastName").asText())) {
                     return ResponseEntity.status(HttpStatus.CONFLICT).body("Person already exists");
                 }
             }
@@ -62,14 +62,14 @@ public class PersonController {
             List<JsonNode> updatedPersonsList = new ArrayList<>();
             Boolean isExists = false;
             for (JsonNode personItem : personsNode) {
-                if (toUpdatePerson.firstName.equals(personItem.get("firstName").asText()) &&
-                        toUpdatePerson.lastName.equals(personItem.get("lastName").asText())) {
+                if (toUpdatePerson.getFirstName().equals(personItem.get("firstName").asText()) &&
+                        toUpdatePerson.getLastName().equals(personItem.get("lastName").asText())) {
                     JsonNode UpdatePersonNode = objectMapper.valueToTree(toUpdatePerson);
                     updatedPersonsList.add(UpdatePersonNode);
                     isExists = true;
                 }
-                if (!(toUpdatePerson.firstName.equals(personItem.get("firstName").asText()) &&
-                        toUpdatePerson.lastName.equals(personItem.get("lastName").asText()))) {
+                if (!(toUpdatePerson.getFirstName().equals(personItem.get("firstName").asText()) &&
+                        toUpdatePerson.getLastName().equals(personItem.get("lastName").asText()))) {
                     updatedPersonsList.add(personItem);
                 }
             }
@@ -97,12 +97,12 @@ public class PersonController {
             List<JsonNode> updatedPersonsList = new ArrayList<>();
             Boolean isExists = false;
             for (JsonNode personItem : personsNode) {
-                if (toDeletePerson.firstName.equals(personItem.get("firstName").asText()) &&
-                        toDeletePerson.lastName.equals(personItem.get("lastName").asText())) {
+                if (toDeletePerson.getFirstName().equals(personItem.get("firstName").asText()) &&
+                        toDeletePerson.getLastName().equals(personItem.get("lastName").asText())) {
                     isExists = true;
                 }
-                if (!(toDeletePerson.firstName.equals(personItem.get("firstName").asText()) &&
-                        toDeletePerson.lastName.equals(personItem.get("lastName").asText()))) {
+                if (!(toDeletePerson.getFirstName().equals(personItem.get("firstName").asText()) &&
+                        toDeletePerson.getLastName().equals(personItem.get("lastName").asText()))) {
                     updatedPersonsList.add(personItem);
                 }
             }

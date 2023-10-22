@@ -40,26 +40,26 @@ public class FireController {
         Map<String, Person> personMap = new HashMap<>();
         for (Any personItem : personsAny) {
             Person person = Person.fromDict(personItem.toString());
-            personMap.put(person.firstName + person.lastName, person);
+            personMap.put(person.getFirstName() + person.getLastName(), person);
         }
         for (Any medicalRecordItem : medicalRecordsAny) {
             MedicalRecord medicalRecord = MedicalRecord.fromDict(medicalRecordItem.toString());
-            Person person = personMap.get(medicalRecord.firstName + medicalRecord.lastName);
-            if (person!= null && person.address!= null && person.address.equals(adress)) {
-                Date birthdate = new SimpleDateFormat("dd/MM/yyyy").parse(medicalRecord.birthdate);
+            Person person = personMap.get(medicalRecord.getFirstName() + medicalRecord.getLastName());
+            if (person!= null && person.getAddress()!= null && person.getAddress().equals(adress)) {
+                Date birthdate = new SimpleDateFormat("dd/MM/yyyy").parse(medicalRecord.getBirthdate());
                 Date currentDate = new Date();
                 long ageInMillis = currentDate.getTime() - birthdate.getTime();
                 long ageInYears = ageInMillis / (1000L * 60 * 60 * 24 * 365);
                 Map<String,String> personData = new HashMap<>();
-                personData.put("firstName", person.firstName);
-                personData.put("lastName", person.lastName);
+                personData.put("firstName", person.getFirstName());
+                personData.put("lastName", person.getLastName());
                 personData.put("age", String.valueOf(ageInYears));
-                personData.put("medications", medicalRecord.medications.toString());
-                personData.put("allergies", medicalRecord.allergies.toString());
+                personData.put("medications", medicalRecord.getMedications().toString());
+                personData.put("allergies", medicalRecord.getAllergies().toString());
                 for (Any fireStationItem : fireStationsAny) {
                     Firestation firestation = Firestation.fromDict(fireStationItem.toString());
-                    if(firestation.address.equals(person.address)) {
-                        personData.put("firestation", firestation.station);
+                    if(firestation.getAddress().equals(person.getAddress())) {
+                        personData.put("firestation", firestation.getStation());
                     }
                 }
                 personDataList.add(personData);

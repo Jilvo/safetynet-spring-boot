@@ -11,8 +11,9 @@ public class Person {
     public String phone;
     public String email;
 
+
     public String getFirstName() {
-        return firstName;
+        return this.firstName;
     }
     public String getLastName() {
         return lastName;
