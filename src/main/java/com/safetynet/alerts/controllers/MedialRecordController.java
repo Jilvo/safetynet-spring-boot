@@ -1,4 +1,5 @@
 package com.safetynet.alerts.controllers;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -17,17 +18,26 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 @RestController
 @RequestMapping("/medicalRecord")
 public class MedialRecordController {
     private final JsonFileService jsonFileService;
+
     @Autowired
     public MedialRecordController(JsonFileService jsonFileService) {
         this.jsonFileService = jsonFileService;
     }
+
+    private static final Logger logger = LogManager.getLogger(MedialRecordController.class);
+
     @PostMapping
     public ResponseEntity<String> createMedicalRecord(@RequestBody MedicalRecord toCreateMedicalRecord) throws IOException {
-        if (toCreateMedicalRecord!= null) {
+        logger.info("Call to /medicalRecord with Method POST");
+
+        if (toCreateMedicalRecord != null) {
             String jsonString = jsonFileService.readJsonFile();
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode root = objectMapper.readTree(jsonString);
@@ -36,6 +46,7 @@ public class MedialRecordController {
             for (JsonNode personItem : medicalrecordsNode) {
                 if (toCreateMedicalRecord.getFirstName().equals(personItem.get("firstName").asText())
                         && toCreateMedicalRecord.getLastName().equals(personItem.get("lastName").asText())) {
+                    logger.error("Endpoint returned: MedicalRecord already exists");
                     return ResponseEntity.status(HttpStatus.CONFLICT).body("MedicalRecord already exists");
                 }
             }
@@ -43,17 +54,22 @@ public class MedialRecordController {
 
             medicalrecordsNode.add(newPersonNode);
 
-            String updatedJsonString = objectMapper.writeValueAsString(root);
-            jsonFileService.writeJsonFile(updatedJsonString);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Created");
-        }
-        else{
+            String createdJsonString = objectMapper.writeValueAsString(root);
+            jsonFileService.writeJsonFile(createdJsonString);
+            logger.info("Endpoint returned: " + createdJsonString);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdJsonString);
+        } else {
+            logger.error("Endpoint returned: Input empty");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Input empty");
         }
     }
+
     @PutMapping
-    public ResponseEntity <String> updateMedicalRecord(@RequestBody MedicalRecord toUpdateMedicalRecord) throws IOException {
-        if (toUpdateMedicalRecord!= null) {
+    public ResponseEntity<String> updateMedicalRecord(@RequestBody MedicalRecord toUpdateMedicalRecord) throws IOException {
+        logger.info("Call to /medicalRecord with Method PUT");
+
+        if (toUpdateMedicalRecord != null) {
             String jsonString = jsonFileService.readJsonFile();
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode root = objectMapper.readTree(jsonString);
@@ -79,14 +95,20 @@ public class MedialRecordController {
             ((ArrayNode) medicalrecordsNode).addAll(updatedMedicalRecords);
             String updatedJsonString = objectMapper.writeValueAsString(root);
             jsonFileService.writeJsonFile(updatedJsonString);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Updated");}
-        else{
+            logger.info("Endpoint returned: " + updatedJsonString);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(updatedJsonString);
+        } else {
+            logger.error("Endpoint returned: Input empty");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Input empty");
         }
     }
+
     @DeleteMapping
-    public ResponseEntity <String> deleteMedicalRecord(@RequestBody MedicalRecord toDeleteMedicalRecord) throws IOException {
-        if (toDeleteMedicalRecord!= null) {
+    public ResponseEntity<String> deleteMedicalRecord(@RequestBody MedicalRecord toDeleteMedicalRecord) throws IOException {
+        logger.info("Call to /medicalRecord with Method DELETE");
+
+        if (toDeleteMedicalRecord != null) {
             String jsonString = jsonFileService.readJsonFile();
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode root = objectMapper.readTree(jsonString);
@@ -110,8 +132,11 @@ public class MedialRecordController {
             ((ArrayNode) medicalrecordsNode).addAll(updatedMedicalRecordsList);
             String updatedJsonString = objectMapper.writeValueAsString(root);
             jsonFileService.writeJsonFile(updatedJsonString);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Deleted");}
-        else{
+            logger.info("Endpoint returned: Deleted");
+
+            return ResponseEntity.status(HttpStatus.CREATED).body("Deleted");
+        } else {
+            logger.error("Endpoint returned: Input empty");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Input empty");
         }
     }

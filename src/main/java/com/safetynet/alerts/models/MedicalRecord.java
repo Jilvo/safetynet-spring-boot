@@ -1,8 +1,10 @@
 package com.safetynet.alerts.models;
 
 import java.util.List;
+
 import com.jsoniter.JsonIterator;
 import com.jsoniter.output.JsonStream;
+
 public class MedicalRecord {
     public String firstName;
     public String lastName;
@@ -29,10 +31,12 @@ public class MedicalRecord {
     public List<String> getAllergies() {
         return allergies;
     }
-    public static MedicalRecord fromDict(String jsonString){
+
+    public static MedicalRecord fromDict(String jsonString) {
         return JsonIterator.deserialize(jsonString, MedicalRecord.class);
     }
-    public static String toDict(MedicalRecord medicalRecord){
+
+    public static String toDict(MedicalRecord medicalRecord) {
         return JsonStream.serialize(medicalRecord);
     }
 }

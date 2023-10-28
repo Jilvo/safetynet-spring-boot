@@ -1,4 +1,5 @@
 package com.safetynet.alerts.controllers;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -17,6 +18,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 @RestController
 @RequestMapping("/person")
 public class PersonController {
@@ -26,9 +30,13 @@ public class PersonController {
     public PersonController(JsonFileService jsonFileService) {
         this.jsonFileService = jsonFileService;
     }
+
+    private static final Logger logger = LogManager.getLogger(PersonController.class);
+
     @PostMapping
-    public ResponseEntity <String>createPerson(@RequestBody Person newPerson) throws IOException {
-        if (newPerson!= null) {
+    public ResponseEntity<String> createPerson(@RequestBody Person newPerson) throws IOException {
+        logger.info("Call to /person with Method POST");
+        if (newPerson != null) {
             String jsonString = jsonFileService.readJsonFile();
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode root = objectMapper.readTree(jsonString);
@@ -37,6 +45,7 @@ public class PersonController {
             for (JsonNode personItem : personsNode) {
                 if (newPerson.getFirstName().equals(personItem.get("firstName").asText())
                         && newPerson.getLastName().equals(personItem.get("lastName").asText())) {
+                    logger.error("Endpoint returned: Person already exists");
                     return ResponseEntity.status(HttpStatus.CONFLICT).body("Person already exists");
                 }
             }
@@ -44,17 +53,21 @@ public class PersonController {
 
             personsNode.add(newPersonNode);
 
-            String updatedJsonString = objectMapper.writeValueAsString(root);
-            jsonFileService.writeJsonFile(updatedJsonString);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Created");
-        }
-        else{
+            String createdJsonString = objectMapper.writeValueAsString(root);
+            jsonFileService.writeJsonFile(createdJsonString);
+            logger.info("Endpoint returned: " + createdJsonString);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdJsonString);
+        } else {
+            logger.error("Endpoint returned: Input empty");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Input empty");
         }
     }
+
     @PutMapping
-    public ResponseEntity <String> updatePerson(@RequestBody Person toUpdatePerson) throws IOException {
-        if (toUpdatePerson!= null) {
+    public ResponseEntity<String> updatePerson(@RequestBody Person toUpdatePerson) throws IOException {
+        logger.info("Call to /person with Method PUT");
+        if (toUpdatePerson != null) {
             String jsonString = jsonFileService.readJsonFile();
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode root = objectMapper.readTree(jsonString);
@@ -80,16 +93,19 @@ public class PersonController {
             ((ArrayNode) personsNode).addAll(updatedPersonsList);
             String updatedJsonString = objectMapper.writeValueAsString(root);
             jsonFileService.writeJsonFile(updatedJsonString);
+            logger.info("Endpoint returned: " + updatedJsonString);
 
-            return ResponseEntity.status(HttpStatus.ACCEPTED).body("Updated");
-        }
-        else{
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(updatedJsonString);
+        } else {
+            logger.error("Endpoint returned: Input empty");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Input empty");
         }
     }
+
     @DeleteMapping
-    public ResponseEntity <String> deletePerson(@RequestBody Person toDeletePerson) throws IOException {
-        if (toDeletePerson!= null) {
+    public ResponseEntity<String> deletePerson(@RequestBody Person toDeletePerson) throws IOException {
+        logger.info("Call to /person with Method DELETE");
+        if (toDeletePerson != null) {
             String jsonString = jsonFileService.readJsonFile();
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode root = objectMapper.readTree(jsonString);
@@ -113,10 +129,10 @@ public class PersonController {
             ((ArrayNode) personsNode).addAll(updatedPersonsList);
             String updatedJsonString = objectMapper.writeValueAsString(root);
             jsonFileService.writeJsonFile(updatedJsonString);
-
+            logger.info("Endpoint returned: Deleted");
             return ResponseEntity.status(HttpStatus.ACCEPTED).body("Deleted");
-        }
-        else{
+        } else {
+            logger.error("Endpoint returned: Input empty");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Input empty");
         }
     }

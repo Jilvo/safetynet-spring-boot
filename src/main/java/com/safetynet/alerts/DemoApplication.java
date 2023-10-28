@@ -15,6 +15,7 @@ public class DemoApplication {
     public JsonFileService jsonFileService() {
         return new JsonFileService();
     }
+
     public static void main(String[] args) {
         SpringApplication.run(DemoApplication.class, args);
     }

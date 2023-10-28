@@ -18,6 +18,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 @RestController
 @RequestMapping("/flood")
 public class FloodController {
@@ -28,8 +31,11 @@ public class FloodController {
         this.jsonFileService = jsonFileService;
     }
 
+    private static final Logger logger = LogManager.getLogger(FloodController.class);
+
     @GetMapping
     public List<HashMap> getFlood(@RequestParam(name = "stations") List<String> stations) throws IOException, ParseException {
+        logger.info("Call to /flood with Method GET");
 
         String jsonString = jsonFileService.readJsonFile();
         Any jsonObject = JsonIterator.deserialize(jsonString);
@@ -51,7 +57,7 @@ public class FloodController {
 
 //            LIST OF STATION
             for (String station : stations) {
-                HashMap<String,Object> ListOfAdressInStation = new HashMap<>();
+                HashMap<String, Object> ListOfAdressInStation = new HashMap<>();
                 List<String> addressForStationNumberList = new ArrayList<>();
                 for (Any firestationItem : firestationsAny) {
                     Firestation firestation = Firestation.fromDict(firestationItem.toString());
@@ -60,9 +66,8 @@ public class FloodController {
                     }
                 }
 //                ONE ADDRESS
-                HashMap<String,Object> PersonByAdress = new HashMap<>();
-                for (String addressForStationNumber : addressForStationNumberList)
-                {
+                HashMap<String, Object> PersonByAdress = new HashMap<>();
+                for (String addressForStationNumber : addressForStationNumberList) {
                     List<Object> ListPersonByAdress = new ArrayList<>();
 //                    ONE PERSON
                     for (Any personItem : personsAny) {
@@ -82,13 +87,15 @@ public class FloodController {
                             personData.put("allergies", String.valueOf(medicalRecord.getAllergies()));
                             ListPersonByAdress.add(personData);
                         }
-                        PersonByAdress.put("Adress "+addressForStationNumber,ListPersonByAdress);
+                        PersonByAdress.put("Adress " + addressForStationNumber, ListPersonByAdress);
                     }
-                    ListOfAdressInStation.put("Station n°"+station,PersonByAdress);
+                    ListOfAdressInStation.put("Station n°" + station, PersonByAdress);
                 }
                 ListOfAdressInListofStation.add(ListOfAdressInStation);
             }
         }
+        logger.info("Endpoint returned: " + ListOfAdressInListofStation);
+
         return ListOfAdressInListofStation;
     }
 

@@ -17,6 +17,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 @RestController
 @RequestMapping("/childAlert")
 public class ChildAlertController {
@@ -27,9 +30,11 @@ public class ChildAlertController {
         this.jsonFileService = jsonFileService;
     }
 
+    private static final Logger logger = LogManager.getLogger(ChildAlertController.class);
+
     @GetMapping
     public List<Map<String, Object>> getChildAlert(@RequestParam(name = "address") String address) throws IOException, ParseException {
-
+        logger.info("Call to /childAlert with Method GET");
         String jsonString = jsonFileService.readJsonFile();
         Any jsonObject = JsonIterator.deserialize(jsonString);
         Any personsAny = jsonObject.get("persons");
@@ -77,6 +82,7 @@ public class ChildAlertController {
                 }
             }
         }
+        logger.info("Endpoint returned: " + childList);
         return childList;
     }
 }

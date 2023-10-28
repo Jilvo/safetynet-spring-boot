@@ -16,6 +16,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 @RestController
 @RequestMapping("/phoneAlert")
 public class PhoneAlertController {
@@ -23,10 +26,14 @@ public class PhoneAlertController {
     public PhoneAlertController(JsonFileService jsonFileService) {
         this.jsonFileService = jsonFileService;
     }
+
+    private static final Logger logger = LogManager.getLogger(PhoneAlertController.class);
     private final JsonFileService jsonFileService;
+
     @GetMapping
-    public List<String> getPhoneAlert(@RequestParam(name = "firestation_number") String firestation_number)throws IOException {
-        String jsonString  = jsonFileService.readJsonFile();
+    public List<String> getPhoneAlert(@RequestParam(name = "firestation_number") String firestation_number) throws IOException {
+        logger.info("Call to /phoneAlert with Method GET");
+        String jsonString = jsonFileService.readJsonFile();
         Any jsonObject = JsonIterator.deserialize(jsonString);
         Any personsAny = jsonObject.get("persons");
         Any firestationsAny = jsonObject.get("firestations");
@@ -45,13 +52,14 @@ public class PhoneAlertController {
             for (String stationNumberAdress : addressForStationNumberList) {
                 for (Any personItem : personsAny) {
                     Person person = Person.fromDict(personItem.toString());
-                    if (person.getAddress()!= null && person.getAddress().equals(stationNumberAdress) && !(phoneNumberList.contains(person.getPhone()))) {
+                    if (person.getAddress() != null && person.getAddress().equals(stationNumberAdress) && !(phoneNumberList.contains(person.getPhone()))) {
                         phoneNumberList.add(person.getPhone());
                     }
                 }
 
             }
         }
+        logger.info("Endpoint returned: " + phoneNumberList);
         return phoneNumberList;
     }
 }

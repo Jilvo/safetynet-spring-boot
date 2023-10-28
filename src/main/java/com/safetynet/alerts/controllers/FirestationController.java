@@ -27,6 +27,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @RestController
 @RequestMapping("/firestation")
@@ -35,16 +37,20 @@ public class FirestationController {
     public FirestationController(JsonFileService jsonFileService) {
         this.jsonFileService = jsonFileService;
     }
+
     private final JsonFileService jsonFileService;
+    private static final Logger logger = LogManager.getLogger(FirestationController.class);
+
     @GetMapping
-    public Map<String,Object> getFirestation(@RequestParam(name = "stationNumber") String stationNumber) throws IOException, ParseException {
-        String jsonString  = jsonFileService.readJsonFile();
+    public Map<String, Object> getFirestation(@RequestParam(name = "stationNumber") String stationNumber) throws IOException, ParseException {
+        logger.info("Call to /firestation with Method GET");
+        String jsonString = jsonFileService.readJsonFile();
         Any jsonObject = JsonIterator.deserialize(jsonString);
         Any personsAny = jsonObject.get("persons");
         Any firestationsAny = jsonObject.get("firestations");
         Any medicalRecordsAny = jsonObject.get("medicalrecords");
         List<String> addressForStationNumberList = new ArrayList<>();
-        Map<String,Object> personsForStationNumber = new HashMap<>();
+        Map<String, Object> personsForStationNumber = new HashMap<>();
         List<Person> personCoverByStationNumber = new ArrayList<>();
         if (firestationsAny != null && firestationsAny.valueType() == ValueType.ARRAY) {
             for (Any firestationItem : firestationsAny) {
@@ -67,15 +73,14 @@ public class FirestationController {
                 for (Any personItem : personsAny) {
                     Person person = Person.fromDict(personItem.toString());
                     MedicalRecord medicalRecord = medicalRecordsMap.get(person.getFirstName() + person.getLastName());
-                    if (person.getAddress()!= null && person.getAddress().equals(stationNumberAdress)) {
+                    if (person.getAddress() != null && person.getAddress().equals(stationNumberAdress)) {
                         Date birthdate = new SimpleDateFormat("dd/MM/yyyy").parse(medicalRecord.getBirthdate());
                         Date currentDate = new Date();
                         long ageInMillis = currentDate.getTime() - birthdate.getTime();
                         long ageInYears = ageInMillis / (1000L * 60 * 60 * 24 * 365);
                         if (ageInYears <= 18) {
                             minorCount++;
-                        }
-                        else {
+                        } else {
                             adultCount++;
 
                         }
@@ -83,17 +88,20 @@ public class FirestationController {
 
                     }
                 }
-                personsForStationNumber.put("List of persons",personCoverByStationNumber);
-                personsForStationNumber.put("Number of Childs",minorCount);
-                personsForStationNumber.put("Number of Adults",adultCount);
+                personsForStationNumber.put("List of persons", personCoverByStationNumber);
+                personsForStationNumber.put("Number of Childs", minorCount);
+                personsForStationNumber.put("Number of Adults", adultCount);
             }
         }
+        logger.info("Endpoint returned: " + personsForStationNumber);
         return (Map<String, Object>) personsForStationNumber;
     }
 
     @PostMapping
     public ResponseEntity<String> createFirestation(@RequestBody Firestation newFirestation) throws IOException {
-        if (newFirestation!= null) {
+        logger.info("Call to /firestation with Method POST");
+
+        if (newFirestation != null) {
             String jsonString = jsonFileService.readJsonFile();
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode root = objectMapper.readTree(jsonString);
@@ -101,6 +109,7 @@ public class FirestationController {
             Map<String, Firestation> firestationMap = new HashMap<>();
             for (JsonNode firestationItem : firestationsNode) {
                 if (newFirestation.getAddress().equals(firestationItem.get("address").asText())) {
+                    logger.error("Endpoint returned: Firestation already exists");
                     return ResponseEntity.status(HttpStatus.CONFLICT).body("Firestation already exists");
                 }
             }
@@ -108,18 +117,22 @@ public class FirestationController {
 
             firestationsNode.add(newFirestationNode);
 
-            String updatedJsonString = objectMapper.writeValueAsString(root);
-            jsonFileService.writeJsonFile(updatedJsonString);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Created");
-        }
-        else{
+            String createdJsonString = objectMapper.writeValueAsString(root);
+            jsonFileService.writeJsonFile(createdJsonString);
+            logger.info("Endpoint returned: " + createdJsonString);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdJsonString);
+        } else {
+            logger.error("Endpoint returned: Input empty");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Input empty");
         }
     }
 
     @PutMapping
-    public ResponseEntity <String> updateFirestation(@RequestBody Firestation toUpdateFirestation) throws IOException {
-        if (toUpdateFirestation!= null) {
+    public ResponseEntity<String> updateFirestation(@RequestBody Firestation toUpdateFirestation) throws IOException {
+        logger.info("Call to /firestation with Method PUT");
+
+        if (toUpdateFirestation != null) {
             String jsonString = jsonFileService.readJsonFile();
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode root = objectMapper.readTree(jsonString);
@@ -143,17 +156,19 @@ public class FirestationController {
             ((ArrayNode) firestationsNode).addAll(updatedFirestationsList);
             String updatedJsonString = objectMapper.writeValueAsString(root);
             jsonFileService.writeJsonFile(updatedJsonString);
-
-            return ResponseEntity.status(HttpStatus.ACCEPTED).body("Updated");
-        }
-        else{
+            logger.info("Endpoint returned: " + updatedJsonString);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(updatedJsonString);
+        } else {
+            logger.error("Endpoint returned: Input empty");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Input empty");
         }
     }
 
     @DeleteMapping
-    public ResponseEntity <String> deleteFirestation(@RequestBody Firestation toDeleteFirestation) throws IOException {
-        if (toDeleteFirestation!= null) {
+    public ResponseEntity<String> deleteFirestation(@RequestBody Firestation toDeleteFirestation) throws IOException {
+        logger.info("Call to /firestation with Method DELETE");
+
+        if (toDeleteFirestation != null) {
             String jsonString = jsonFileService.readJsonFile();
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode root = objectMapper.readTree(jsonString);
@@ -161,7 +176,7 @@ public class FirestationController {
             List<JsonNode> updatedFirestationsList = new ArrayList<>();
             Boolean isExist = false;
             for (JsonNode firestationItem : firestationsNode) {
-                if (toDeleteFirestation.getAddress().equals(firestationItem.get("address").asText()) ) {
+                if (toDeleteFirestation.getAddress().equals(firestationItem.get("address").asText())) {
                     isExist = true;
                 }
                 if (!(toDeleteFirestation.getAddress().equals(firestationItem.get("address").asText()))) {
@@ -175,10 +190,11 @@ public class FirestationController {
             ((ArrayNode) firestationsNode).addAll(updatedFirestationsList);
             String updatedJsonString = objectMapper.writeValueAsString(root);
             jsonFileService.writeJsonFile(updatedJsonString);
+            logger.info("Endpoint returned: " + "Deleted");
 
             return ResponseEntity.status(HttpStatus.ACCEPTED).body("Deleted");
-        }
-        else{
+        } else {
+            logger.error("Endpoint returned: Input empty");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Input empty");
         }
     }
