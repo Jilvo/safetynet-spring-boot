@@ -24,13 +24,13 @@ import org.apache.logging.log4j.Logger;
 @RestController
 @RequestMapping("/person")
 public class PersonController {
-    private final JsonFileService jsonFileService;
 
+//    @Autowired
+//    public PersonController(JsonFileService jsonFileService) {
+//        this.jsonFileService = jsonFileService;
+//    }
     @Autowired
-    public PersonController(JsonFileService jsonFileService) {
-        this.jsonFileService = jsonFileService;
-    }
-
+    public JsonFileService jsonFileService;
     private static final Logger logger = LogManager.getLogger(PersonController.class);
 
     @PostMapping
