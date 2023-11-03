@@ -10,11 +10,15 @@ public class Firestation {
     public String getAddress() {
         return address;
     }
-
+    public void setAddress(String address) {
+        this.address = address;
+    }
     public String getStation() {
         return station;
     }
-
+    public void setStation(String station) {
+        this.station = station;
+    }
     public static Firestation fromDict(String jsonString) {
         return JsonIterator.deserialize(jsonString, Firestation.class);
     }
