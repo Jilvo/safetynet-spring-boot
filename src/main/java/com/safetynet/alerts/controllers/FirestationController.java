@@ -94,7 +94,7 @@ public class FirestationController {
             }
         }
         logger.info("Endpoint returned: " + personsForStationNumber);
-        return (Map<String, Object>) personsForStationNumber;
+        return personsForStationNumber;
     }
 
     @PostMapping
