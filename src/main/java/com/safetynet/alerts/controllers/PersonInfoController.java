@@ -6,15 +6,11 @@ import com.jsoniter.any.Any;
 import com.safetynet.alerts.models.Person;
 import com.safetynet.alerts.services.JsonFileService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,14 +18,14 @@ import org.apache.logging.log4j.Logger;
 @RestController
 @RequestMapping("/personInfo")
 public class PersonInfoController {
-    private final JsonFileService jsonFileService;
 
     @Autowired
     public PersonInfoController(JsonFileService jsonFileService) {
         this.jsonFileService = jsonFileService;
     }
 
-    private static final Logger logger = LogManager.getLogger(PersonInfoController.class);
+    private static final Logger logger = LogManager.getLogger(PhoneAlertController.class);
+    private final JsonFileService jsonFileService;
 
     @GetMapping
     public List<Person> getPersonInfo(@RequestParam(name = "firstname") String firstname, @RequestParam(name = "lastname") String lastname) throws IOException {

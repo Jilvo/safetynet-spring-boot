@@ -25,10 +25,12 @@ import org.apache.logging.log4j.Logger;
 @RequestMapping("/person")
 public class PersonController {
     private JsonFileService jsonFileService;
+
     @Autowired
     public PersonController(JsonFileService jsonFileService) {
-       this.jsonFileService = jsonFileService;
-   }
+        this.jsonFileService = jsonFileService;
+    }
+
     private static final Logger logger = LogManager.getLogger(PersonController.class);
 
     @PostMapping
