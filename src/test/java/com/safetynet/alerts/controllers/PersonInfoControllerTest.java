@@ -1,4 +1,3 @@
-
 package com.safetynet.alerts.controllers;
 
 import com.safetynet.alerts.JsonFileServiceMock;
@@ -11,25 +10,27 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(ChildAlertController.class)
-public class ChildAlertControllerTest extends JsonFileServiceMock {
+@WebMvcTest(PersonInfoController.class)
+public class PersonInfoControllerTest extends JsonFileServiceMock {
     @Autowired
     private MockMvc mockMvc;
 
     @BeforeEach
     public void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(new ChildAlertController(jsonFileService)).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(new PersonInfoController(jsonFileService)).build();
     }
 
     @Test
-    public void testGetChildAlert() throws Exception {
+    public void testGetPersonInfo() throws Exception {
         JsonFileServiceMock();
-        ResultActions result = mockMvc.perform(get("/childAlert")
-                .param("address", "1509CulverSt")
+        ResultActions result = mockMvc.perform(get("/personInfo")
+                .param("firstname", "John")
+                .param("lastname", "Boyd")
                 .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
     }
 }
+

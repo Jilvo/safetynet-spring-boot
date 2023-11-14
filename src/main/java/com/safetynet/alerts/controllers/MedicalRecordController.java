@@ -23,15 +23,15 @@ import org.apache.logging.log4j.Logger;
 
 @RestController
 @RequestMapping("/medicalRecord")
-public class MedialRecordController {
+public class MedicalRecordController {
     private final JsonFileService jsonFileService;
 
     @Autowired
-    public MedialRecordController(JsonFileService jsonFileService) {
+    public MedicalRecordController(JsonFileService jsonFileService) {
         this.jsonFileService = jsonFileService;
     }
 
-    private static final Logger logger = LogManager.getLogger(MedialRecordController.class);
+    private static final Logger logger = LogManager.getLogger(MedicalRecordController.class);
 
     @PostMapping
     public ResponseEntity<String> createMedicalRecord(@RequestBody MedicalRecord toCreateMedicalRecord) throws IOException {
@@ -97,7 +97,7 @@ public class MedialRecordController {
             jsonFileService.writeJsonFile(updatedJsonString);
             logger.info("Endpoint returned: " + updatedJsonString);
 
-            return ResponseEntity.status(HttpStatus.CREATED).body(updatedJsonString);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(updatedJsonString);
         } else {
             logger.error("Endpoint returned: Input empty");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Input empty");
@@ -134,7 +134,7 @@ public class MedialRecordController {
             jsonFileService.writeJsonFile(updatedJsonString);
             logger.info("Endpoint returned: Deleted");
 
-            return ResponseEntity.status(HttpStatus.CREATED).body("Deleted");
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body("Deleted");
         } else {
             logger.error("Endpoint returned: Input empty");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Input empty");
